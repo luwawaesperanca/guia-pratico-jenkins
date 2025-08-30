@@ -1,14 +1,21 @@
 pipeline {
     agent any
     stages {
-        stage('Build') {
+        stage('Build Docker Image') {
             steps {
-                echo 'Building...'
+                script{
+                    dockerapp = docker.build('https://github.com/luwawaesperanca/guia-pratico-jenkins:${env.BUILD_ID}", f ./src/docker')
+                }
             }
         }
-        stage('Test') {
+        stage('Push Docker Image') {
             steps {
-                echo 'Testing...'
+                script{
+                    dockerapp.withRegistery('https://hub.docker.com/repositories/lesperanca96', 'dockerhub'){
+                        dockerapp.push('latest')
+                        dockerapp.push("${env.BUILD_ID}")
+                    }
+                }
             }
         }
         stage('Deploy') {
